@@ -1,16 +1,28 @@
 import urllib
 from bs4 import BeautifulSoup
-import json,csv
+import json,csv,re
 
 def wings(link):
-    f = urllib.urlopen(link)
-    myfile = f.read()
+    page = re.search(r"\?page=([0-9]+)",link)
+    page = page.group(1)
     
+    try:
+        f = open("cache/"+page+".html")
+    except:
+        f = urllib.urlopen(link)        
+
+    myfile = f.read()
+
     soup = BeautifulSoup(myfile,"html.parser")
     results = soup.find_all('script')[4].contents[0]
     results = results[14:-1]
     
     data = json.loads(results)
+
+    cache = open('cache/'+str(data['current_page'])+".html", "w+")
+    cache.write(myfile)
+    cache.close()
+
     print "Parsing WFL page: ",link
     results = data['data']
 
